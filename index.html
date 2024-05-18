@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumping Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+        #player {
+            width: 50px;
+            height: 50px;
+            background-color: #00f;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .obstacle {
+            width: 30px;
+            height: 30px;
+            background-color: #f00;
+            border-radius: 50%;
+            position: absolute;
+            animation: moveRight 2s linear infinite; /* 수정된 부분: 물체 이동 속도 */
+        }
+        @keyframes moveRight {
+            from {
+                left: -30px;
+            }
+            to {
+                left: 100%;
+            }
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="player"></div>
+    <div id="score">Score: 0</div>
+
+    <script>
+        const player = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let playerBottom = 0;
+
+        function createObstacle() {
+            for (let i = 0; i < 5; i++) { // 무작위 위치에 5개의 장애물 생성
+                const obstacle = document.createElement('div');
+                obstacle.classList.add('obstacle');
+                obstacle.style.top = `${Math.random() * (window.innerHeight - 30)}px`;
+                document.body.appendChild(obstacle);
+
+                obstacle.addEventListener('animationiteration', () => {
+                    if (isColliding(player, obstacle)) {
+                        endGame();
+                    }
+                });
+
+                obstacle.addEventListener('animationend', () => {
+                    document.body.removeChild(obstacle);
+                });
+            }
+        }
+
+        function isColliding(player, obstacle) {
+            const playerRect = player.getBoundingClientRect();
+            const obstacleRect = obstacle.getBoundingClientRect();
+            return !(
+                playerRect.right < obstacleRect.left ||
+                playerRect.left > obstacleRect.right ||
+                playerRect.bottom < obstacleRect.top ||
+                playerRect.top > obstacleRect.bottom
+            );
+        }
+
+        function endGame() {
+            alert(`Game Over! Your score: ${score}`);
+            location.reload();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'ArrowUp') {
+                playerBottom += 50;
+                player.style.bottom = `${playerBottom}px`;
+            } else if (event.code === 'ArrowDown') {
+                playerBottom -= 50;
+                player.style.bottom = `${playerBottom}px`;
+            }
+        });
+
+        setInterval(createObstacle, 2000);
+        setInterval(() => {
+            score++;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }, 1000);
+    </script>
+</body>
+</html>
